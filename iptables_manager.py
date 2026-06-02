@@ -132,8 +132,11 @@ class IptablesManager:
             cmd += f' -m limit --limit {limit}'
         cmd += f' -j {target}'
         
-        if to_destination and (target == 'DNAT' or target == 'SNAT'):
-            cmd += f' --to-destination {to_destination}'
+        if to_destination:
+            if target == 'DNAT':
+                cmd += f' --to-destination {to_destination}'
+            elif target == 'SNAT':
+                cmd += f' --to-source {to_destination}'
         
         result = self.run_command(cmd)
         
