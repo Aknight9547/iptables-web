@@ -168,18 +168,19 @@ class IptablesManager:
         return self.run_command(cmd)
     
     def restore_rules(self, content):
-        import tempfile
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.iptables', delete=False) as f:
-            f.write(content)
-            temp_path = f.name
-        
         try:
-            cmd = f'sudo iptables-restore < {temp_path}'
-            result = self.run_command(cmd)
-            return result
-        finally:
-            import os
-            os.unlink(temp_path)
+            result = subprocess.run(
+                ['sudo', 'iptables-restore'],
+                input=content,
+                text=True,
+                capture_output=True
+            )
+            if result.returncode == 0:
+                return {'success': True, 'output': result.stdout, 'error': ''}
+            else:
+                return {'success': False, 'output': '', 'error': result.stderr}
+        except Exception as e:
+            return {'success': False, 'output': '', 'error': str(e)}
     
     def get_stats(self):
         stats = {
